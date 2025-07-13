@@ -17,15 +17,17 @@
   ```
 
   ```
-  az storage blob upload --account-name saproxmox --container-name vhds --file "C:\Users\mbuch\OneDrive\Desktop\proxmox\proxmox.vhd" --name proxmox.vhd --overwrite
-  az disk create --resource-group rg-proxmox --name disk-proxmox --source https://saproxmox.blob.core.windows.net/vhds/proxmox.vhd --os-type Linux
+  $osDiskName = "disk-proxmox2"  # Name of your existing disk
+
+  az storage blob upload --account-name saproxmox --container-name vhds --file "C:\Users\mbuch\OneDrive\Desktop\proxmox\proxmox-azure.vhd" --name proxmox.vhd --overwrite
+  az disk create --resource-group rg-proxmox --name $osDiskName --source https://saproxmox.blob.core.windows.net/vhds/proxmox.vhd --os-type Linux
 
   $rg = "rg-proxmox"
   $location = "eastus"
   $vnetName = "proxmox-vnet"
   $subnetName = "proxmox-subnet"
-  $nicName = "proxmox-nic"
-  $publicIpName = "proxmox-ip"
+  $nicName = "proxmox-nic2"
+  $publicIpName = "proxmox-ip2"
 
   az network public-ip create --resource-group $rg --name $publicIpName --allocation-method Static
 
@@ -51,8 +53,7 @@
   --network-security-group $nsgName `
   --public-ip-address $publicIpName
 
-  $vmName = "vm-proxmox"
-  $osDiskName = "disk-proxmox"  # Name of your existing disk
+  $vmName = "vm-proxmox2"
   $size = "Standard_DS1_v2"     # Or whatever you want
 
   az vm create `
@@ -77,6 +78,8 @@
   # Changed NSG of proxmox-nic
   ```
 
+- Chrome Reader Mode extension somehow interferes with web proxy
+- You can ssh into your proxmox
 - First thing, Updates > Refresh, _Upgrade
   - Ignore errors
   - Turn off Proxmox repositories by going into Updates > Repositories and disabling anything with `enterprise.proxmox`
@@ -85,3 +88,16 @@
   - You will see your action in the Task History section
 - Disks
   - Although the LVM section might suggest there's no free space, the used space is assigned to LVM, which you can see in the LVM Thin section
+- VMs migrate between Proxmox servers on a cluster quickly and stay live. Containers are the opposite.
+- Predownload:
+  - Proxmox ISO
+  - Ubuntu server ISO
+- Consider mimicing [Launching a VM](https://www.youtube.com/watch?v=xBUnV2rQ7do&t=1177s)
+  - mbuchoff / password
+  - Your VM will need virtualization enabled. Could be a hurdle. In HyperV: `Set-VMProcessor -VMName "YourVMName" -ExposeVirtualizationExtensions $true`
+- networking for Ubuntu Server
+  - Proxmox ip: 172.24.201.156
+  - Subnet: 172.24.192.0/20
+  - Address: 172.24.201.200
+  - Gateway: 172.24.192.1
+  - Name servers: 8.8.8.8, 1.1.1.1
